@@ -18,7 +18,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -72,3 +72,18 @@ async def save_quality_file(file: UploadFile = File(...)) -> dict[str, str | int
     except Exception as exc:
         raise HTTPException(status_code=422, detail=f"Excel解析失败：{exc}") from exc
     return {"filename": target.name, "path": str(target), "size": len(content), "extracted_text": extracted_text}
+
+
+@app.delete("/api/quality/upload/{filename}")
+def delete_quality_file(filename: str) -> dict[str, str]:
+    safe_name = safe_filename(filename)
+    if safe_name != filename:
+        raise HTTPException(status_code=400, detail="文件名不合法")
+    target = UPLOAD_DIR / safe_name
+    if not target.is_file():
+        raise HTTPException(status_code=404, detail="文件不存在或已被删除")
+    try:
+        target.unlink()
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=f"删除文件失败：{exc}") from exc
+    return {"status": "deleted", "filename": safe_name}

@@ -1,16 +1,5 @@
-export interface TermRecord {
-  id: string; zh: string; en: string; abbr: string; domain: string; subdomain: string;
-  definition: string; unit: string; aliases: string[]; source: string; status: "已审核" | "待审核";
-}
-export interface BaseRecord {
-  id: string; type: "专业分类" | "计量单位" | "常用缩写" | "数据来源";
-  name: string; code: string; description: string; parent: string; status: "启用" | "停用";
-}
-export interface RuleRecord {
-  id: string; name: string; type: "术语规范" | "单位格式" | "数值范围" | "字段完整性" | "逻辑关系" | "时间顺序" | "编码命名";
-  domain: string; severity: "错误" | "警告" | "建议"; condition: string; message: string;
-  source: string; scope: string; status: "启用" | "停用"; template: boolean;
-}
+import type { BaseRecord, RuleRecord, TermRecord } from "../types";
+import { publicBaseRecords, publicRuleRecords, publicTermRecords } from "./publicSeed";
 
 export const termRecords: TermRecord[] = [
   {id:"T0001",zh:"储层",en:"reservoir",abbr:"",domain:"油藏与地质",subdomain:"储层地质",definition:"具有储集并渗流油气能力的岩层。",unit:"",aliases:["储集层"],source:"GB/T 8423.1-2018",status:"已审核"},
@@ -94,3 +83,7 @@ export const ruleRecords: RuleRecord[] = [
   {id:"R0027",name:"数据对象标识必须唯一",type:"编码命名",domain:"通用",severity:"错误",condition:"同一数据域内对象ID重复",message:"数据对象标识重复。",source:"Energistics标识规范",scope:"全部结构化对象",status:"启用",template:false},
   {id:"R0028",name:"深度基准必须声明",type:"字段完整性",domain:"钻井工程",severity:"错误",condition:"MD、TVD或TVDSS存在但深度基准为空",message:"井深数据必须声明深度基准面。",source:"WITSML",scope:"井、井筒与测井",status:"启用",template:false},
 ];
+
+termRecords.push(...publicTermRecords);
+baseRecords.push(...publicBaseRecords);
+ruleRecords.push(...publicRuleRecords);

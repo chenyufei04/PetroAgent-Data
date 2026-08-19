@@ -1,0 +1,19 @@
+.quality-upload { margin-bottom: 8px; }
+.quality-staged { overflow: hidden; margin-bottom: 8px; color: #4e5969; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.quality-upload-button { height: 32px; flex: none; margin-bottom: 16px; border: 0; border-radius: 4px; color: #fff; background: #1677dc; font-weight: 600; cursor: pointer; }
+.quality-upload-button:hover:not(:disabled) { background: #0f69c8; }
+.quality-upload-button:disabled { cursor: not-allowed; background: #a9c9eb; }
+.quality-text-entry { flex: none; margin-bottom: 16px; padding: 10px; border: 1px solid #dfe3e8; border-radius: 5px; background: #fff; }
+.quality-text-entry > div { display: flex; justify-content: space-between; margin-bottom: 7px; }
+.quality-text-entry > div span { color: #86909c; font-size: 10px; }
+.quality-textarea-wrap { position: relative; }.quality-text-entry textarea { width: 100%; height: 72px; resize: vertical; padding: 8px 40px 8px 8px; border: 1px solid #d9dde3; border-radius: 4px; outline: none; color: #303843; font: inherit; line-height: 1.5; }
+.quality-text-entry textarea:focus { border-color: #1677dc; box-shadow: 0 0 0 2px #1677dc18; }
+.quality-text-entry .quality-microphone { position: absolute; right: 7px; bottom: 7px; width: 29px; height: 29px; margin: 0; padding: 0; border: 1px solid #b9d9fa; border-radius: 50%; color: #1677dc; background: #eaf4ff; cursor: pointer; }.quality-text-entry .quality-microphone:hover { border-color: #1677dc; }.quality-text-entry .quality-microphone.listening { color: #fff; background: #e5484d; border-color: #e5484d; animation: microphone-pulse 1.2s infinite; }.quality-microphone span { font-size: 15px; }.quality-voice-status { display: block; margin-top: 5px; color: #86909c; font-size: 10px; line-height: 1.4; }.quality-voice-status.listening { color: #1677dc; }.quality-text-entry .quality-add-text { width: 100%; height: 29px; margin-top: 7px; border: 0; border-radius: 4px; color: #fff; background: #1677dc; cursor: pointer; }.quality-text-entry .quality-add-text:disabled { cursor: not-allowed; background: #a9c9eb; }@keyframes microphone-pulse{50%{box-shadow:0 0 0 5px #e5484d22}}
+.quality-file-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; padding: 8px; border: 1px solid transparent; border-radius: 5px; color: #4e5969; background: transparent; text-align: left; cursor: pointer; }
+.quality-file-row:hover { background: #eef1f5; }
+.quality-file-row.active { border-color: #b9d9fa; background: #eaf4ff; }
+.quality-file-row .quality-check { width: auto; flex: none; margin: 0; padding: 5px 8px; border: 1px solid #1677dc; border-radius: 4px; color: #1677dc; background: #fff; font-size: 10px; cursor: pointer; }
+.quality-file-row .quality-check:hover:not(:disabled) { color: #fff; background: #1677dc; }
+.quality-file-row .quality-check:disabled { cursor: not-allowed; opacity: .45; }
+.quality-file-row .quality-remove { width: auto; flex: none; margin: 0; padding: 2px; border: 0; color: #a2a9b2; background: transparent; font-size: 16px; cursor: pointer; }
+.quality-file-row .quality-remove:hover { color: #cf1322; }

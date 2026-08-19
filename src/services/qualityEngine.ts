@@ -14,8 +14,18 @@ const checks:Check[]=[
   {ruleId:"R0013",level:"error",title:"井斜角越界",pattern:/井斜角[：:=\s]*(-?\d+(?:\.\d+)?)\s*°?/g,message:"井斜角超出0°～180°有效范围。",suggestion:"检查轨迹数据和角度单位。",validate:m=>Number(m[1])<0||Number(m[1])>180},
   {ruleId:"R0014",level:"error",title:"方位角越界",pattern:/方位角[：:=\s]*(-?\d+(?:\.\d+)?)\s*°?/g,message:"方位角应在0°～360°范围内。",suggestion:"检查方位基准和角度单位。",validate:m=>Number(m[1])<0||Number(m[1])>=360},
   {ruleId:"R0015",level:"error",title:"产量为负值",pattern:/(?:日产油量|日产气量|日产水量|日产液量|累计产量)[：:=\s]*(-\d+(?:\.\d+)?)/g,message:"生产量不能为负数。",suggestion:"检查冲销记录、符号、单位或数据版本。"},
+  {ruleId:"PR001",level:"error",title:"井深为负值",pattern:/(?:测量深度|垂直深度|钻头深度|井底深度|井深|MD|TVD)[：:=\s]*(-\d+(?:\.\d+)?)\s*(?:m|米)?/gi,message:"井深不能为负数。",suggestion:"核对深度基准、符号和原始记录。"},
+  {ruleId:"PR006",level:"warning",title:"单位符号不规范",pattern:/\b(?:mpa|kpa)\b/g,message:"压力单位符号大小写不符合单位字典。",suggestion:"分别使用MPa或kPa。"},
+  {ruleId:"PR007",level:"error",title:"温度低于绝对零度",pattern:/(?:温度|井温)[：:=\s]*(-?\d+(?:\.\d+)?)\s*(℃|°C|K)/gi,message:"温度低于物理允许的绝对零度。",suggestion:"检查温标、符号和传感器数据。",validate:m=>m[2].toUpperCase()==="K"?Number(m[1])<0:Number(m[1])<-273.15},
+  {ruleId:"PR008",level:"error",title:"密度不是正数",pattern:/(?:钻井液密度|流体密度|体积密度|密度)[：:=\s]*(-?\d+(?:\.\d+)?)/g,message:"质量密度必须大于0。",suggestion:"检查数值、单位或缺失值编码。",validate:m=>Number(m[1])<=0},
+  {ruleId:"PR009",level:"error",title:"黏度为负值",pattern:/(?:塑性黏度|漏斗黏度|动力黏度|粘度|黏度)[：:=\s]*(-\d+(?:\.\d+)?)/g,message:"黏度不能为负数。",suggestion:"检查原始测量值和缺失值编码。"},
+  {ruleId:"PR010",level:"error",title:"转速为负值",pattern:/(?:转盘转速|顶驱转速|转速|RPM)[：:=\s]*(-\d+(?:\.\d+)?)/gi,message:"未声明方向约定时转速不应为负。",suggestion:"检查符号约定、传感器零点和原始值。"},
+  {ruleId:"PR011",level:"error",title:"泵排量为负值",pattern:/(?:泵排量|排量|flow rate)[：:=\s]*(-\d+(?:\.\d+)?)/gi,message:"未声明流向约定时泵排量不应为负。",suggestion:"检查流向标识、单位和原始值。"},
   {ruleId:"R0002",level:"suggestion",title:"缩写建议补充全称",pattern:/\b(?:MD|TVD|ROP|WOB|ECD|GOR|WHP)\b/g,message:"专业缩写首次出现时宜同时给出全称。",suggestion:"在首次出现处补充中文或英文全称。"},
 ];
+
+export const executableRuleIds = new Set(checks.map(check=>check.ruleId));
+export const executableRuleCount = executableRuleIds.size;
 
 export function inspectText(text:string):QualityIssue[]{
   const issues:QualityIssue[]=[];

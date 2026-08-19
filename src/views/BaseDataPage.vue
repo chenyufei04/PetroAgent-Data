@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { baseRecords, type BaseRecord } from "../data/seed";
+import { baseRecords } from "../data/seed";
+import type { BaseRecord } from "../types";
 
 const types:BaseRecord["type"][]=["专业分类","计量单位","常用缩写","数据来源"];
 const activeType=ref<BaseRecord["type"]>("专业分类");
