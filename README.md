@@ -97,7 +97,7 @@
 
 ## 安装与更新文档
 
-项目首次拉取、Windows/macOS 环境安装、使用清华 PyPI 镜像安装 `requirements.txt`、启动以及后续更新的完整流程，请参阅 [INSTALL_AND_UPDATE.md](INSTALL_AND_UPDATE.md)。
+项目首次拉取、GitHub 账户关联与推送认证、Windows/macOS 环境安装、使用清华 PyPI 镜像安装 `requirements.txt`、启动以及后续更新的完整流程，请参阅 [部署与更新指南.md](部署与更新指南.md)。
 
 ## 项目结构
 
@@ -135,7 +135,7 @@ demo-test/
 ├─ uploads/                       # 质控上传文件保存目录
 ├─ .gitignore
 ├─ index.html
-├─ INSTALL_AND_UPDATE.md          # 项目拉取、安装、启动及更新指南
+├─ 部署与更新指南.md              # GitHub关联、项目拉取、安装、启动及更新指南
 ├─ package.json
 ├─ package-lock.json
 ├─ PUBLIC_DATA_SOURCES.md         # 公开来源及使用边界
