@@ -6,7 +6,7 @@
 
 ## 当前开发进度
 
-更新时间：2026-08-19
+更新时间：2026-08-27
 
 | 模块 | 当前状态 | 已完成内容 |
 |---|---|---|
@@ -146,16 +146,41 @@ demo-test/
 - Node.js 18 或更高版本
 - npm
 - Python 3.10
-- Chrome 或 Edge（使用语音识别时推荐）
+- Windows 10/11 或 macOS 12 及以上版本
+- Chrome 或 Edge（使用语音识别时推荐；macOS 也可以使用 Safari，但语音识别行为可能不同）
 
-## 安装
+可先确认环境版本：
+
+```text
+node --version
+npm --version
+python --version
+```
+
+> 项目固定使用 Python 3.10。若系统中的 `python` 不是 3.10，请按下方对应系统的命令创建虚拟环境。
+
+## Windows 部署
+
+### 1. 获取项目并进入目录
+
+```powershell
+git clone https://github.com/chenyufei04/PetroAgent-Data.git
+cd PetroAgent-Data
+```
+
+如果已经拥有本地项目，可直接进入实际目录：
 
 ```powershell
 cd F:\Projects\demo-test
+```
+
+### 2. 安装前端依赖
+
+```powershell
 npm install
 ```
 
-创建并安装 Python 3.10 虚拟环境：
+### 3. 创建 Python 3.10 虚拟环境并安装后端依赖
 
 ```powershell
 py -3.10 -m venv .venv
@@ -163,22 +188,98 @@ py -3.10 -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-## 启动
-
-终端一启动后端：
+如果 PowerShell 阻止虚拟环境脚本运行，可仅对当前终端临时放开限制后再次激活：
 
 ```powershell
-cd F:\Projects\demo-test
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+### 4. 启动项目
+
+打开两个终端。在终端一启动 FastAPI 后端：
+
+```powershell
 .\.venv\Scripts\Activate.ps1
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
 
-终端二启动前端：
+在终端二启动 Vue 前端：
 
 ```powershell
-cd F:\Projects\demo-test
 npm run dev
 ```
+
+## macOS 部署
+
+以下命令同时适用于 Intel Mac 和 Apple Silicon（M1/M2/M3/M4）Mac。
+
+### 1. 安装基础工具
+
+先安装 Xcode Command Line Tools：
+
+```bash
+xcode-select --install
+```
+
+推荐使用 Homebrew 安装 Node.js 和 Python 3.10。如果尚未安装 Homebrew，请先按照 [Homebrew 官网](https://brew.sh/) 的说明安装，然后执行：
+
+```bash
+brew install node python@3.10
+```
+
+Apple Silicon 的 Homebrew 通常位于 `/opt/homebrew`，Intel Mac 通常位于 `/usr/local`；通过 `brew` 执行安装时无需在项目中硬编码该路径。
+
+### 2. 获取项目并进入目录
+
+```bash
+git clone https://github.com/chenyufei04/PetroAgent-Data.git
+cd PetroAgent-Data
+```
+
+如果项目已经在本机，请将上述目录替换为实际路径，例如：
+
+```bash
+cd ~/Projects/PetroAgent-Data
+```
+
+### 3. 安装前端依赖
+
+```bash
+npm install
+```
+
+### 4. 创建 Python 3.10 虚拟环境并安装后端依赖
+
+```bash
+python3.10 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+以后重新打开终端时，只需在项目目录执行 `source .venv/bin/activate` 即可重新进入虚拟环境。
+
+### 5. 启动项目
+
+打开两个终端。在终端一启动 FastAPI 后端：
+
+```bash
+cd ~/Projects/PetroAgent-Data
+source .venv/bin/activate
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+在终端二启动 Vue 前端：
+
+```bash
+cd ~/Projects/PetroAgent-Data
+npm run dev
+```
+
+如果需要让同一局域网内的其他设备访问，可使用 `npm run dev -- --host 0.0.0.0` 启动前端；后端也需要改为监听 `0.0.0.0`。此时请仅在可信网络中使用，并在 macOS 防火墙弹窗中按需允许访问。
+
+## 访问地址
 
 访问：
 
@@ -194,6 +295,8 @@ http://127.0.0.1:8000/docs
 
 如果出现 `ECONNREFUSED 127.0.0.1:8000`，说明前端已经启动，但 FastAPI 后端没有运行。
 
+如果提示端口 `8000` 或 `5173` 已被占用，请先关闭占用该端口的旧进程，或为前后端指定其他端口；修改后端端口时还需要同步修改 Vite 代理配置。
+
 ## 麦克风权限
 
 - 使用 `localhost`、`127.0.0.1` 或 HTTPS 打开页面。
@@ -203,13 +306,15 @@ http://127.0.0.1:8000/docs
 
 ## 构建验证
 
-```powershell
+Windows PowerShell 与 macOS Terminal 均执行：
+
+```text
 npm run build
 ```
 
 该命令先执行 Vue/TypeScript 类型检查，再生成 `dist/` 生产构建。
 
-截至2026-08-19，当前版本已经通过完整的 Vue、TypeScript 和 Vite 生产构建验证。
+截至2026-08-27，当前版本已经通过完整的 Vue、TypeScript 和 Vite 生产构建验证。
 
 ## 当前限制
 
