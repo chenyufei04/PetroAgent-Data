@@ -10,6 +10,7 @@ from xml.etree import ElementTree
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from openpyxl import load_workbook
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -156,6 +157,17 @@ async def save_quality_file(file: UploadFile = File(...)) -> dict[str, object]:
     except Exception as exc:
         raise HTTPException(status_code=422, detail=f"文件解析失败：{exc}") from exc
     return {"filename": target.name, "path": str(target), "size": len(content), "extracted_text": extracted_text, "table_data": table_data}
+
+
+@app.get("/api/quality/upload/{filename}")
+def read_quality_file(filename: str) -> FileResponse:
+    safe_name = safe_filename(filename)
+    if safe_name != filename:
+        raise HTTPException(status_code=400, detail="文件名不合法")
+    target = UPLOAD_DIR / safe_name
+    if not target.is_file():
+        raise HTTPException(status_code=404, detail="文件不存在或已被删除")
+    return FileResponse(target)
 
 
 @app.delete("/api/quality/upload/{filename}")

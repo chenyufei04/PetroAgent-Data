@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from "vue-router";
+import HomePage from "./views/HomePage.vue";
 import BlankPage from "./views/BlankPage.vue";
 import ImportPage from "./views/ImportPage.vue";
 import TermsPage from "./views/TermsPage.vue";
@@ -7,22 +8,22 @@ import RulesPage from "./views/RulesPage.vue";
 import QualityPage from "./views/QualityPage.vue";
 
 export const pages = [
-  { path: "/quality", name: "quality", label: "质控" },
-  { path: "/rules", name: "rules", label: "规则库" },
-  { path: "/terms", name: "terms", label: "术语库" },
-  { path: "/base", name: "base", label: "基础数据" },
-  { path: "/import", name: "import", label: "数据导入" },
-  { path: "/check", name: "check", label: "规则自检" },
+  { path: "/", name: "home", label: "首页", icon: "⌂" },
+  { path: "/quality", name: "quality", label: "数据质控", icon: "◇" },
+  { path: "/rules", name: "rules", label: "规则库", icon: "▤" },
+  { path: "/terms", name: "terms", label: "术语库", icon: "T" },
+  { path: "/base", name: "base", label: "基础数据", icon: "D" },
+  { path: "/import", name: "import", label: "数据导入", icon: "↑" },
+  { path: "/check", name: "check", label: "规则自检", icon: "✓" },
 ] as const;
 
 export default createRouter({
   history: createWebHashHistory(),
   routes: [
-    { path: "/", redirect: "/quality" },
     ...pages.map(page => ({
       path: page.path,
       name: page.name,
-      component: page.name === "import" ? ImportPage : page.name === "terms" ? TermsPage : page.name === "base" ? BaseDataPage : page.name === "rules" ? RulesPage : page.name === "quality" ? QualityPage : BlankPage,
+      component: page.name === "home" ? HomePage : page.name === "import" ? ImportPage : page.name === "terms" ? TermsPage : page.name === "base" ? BaseDataPage : page.name === "rules" ? RulesPage : page.name === "quality" ? QualityPage : BlankPage,
       meta: { label: page.label },
     })),
   ],

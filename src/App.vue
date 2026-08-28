@@ -7,18 +7,16 @@ import { useDataStore } from "./stores/data";
 const route = useRoute();
 const store = useDataStore();
 const activeName = computed(() => route.name as string);
-watch(() => route.meta.label, label => { document.title = `${String(label)} - 石油工程术语质控`; }, { immediate: true });
+watch(() => route.meta.label, label => { document.title = `${String(label)} - 石油工程数据质控`; }, { immediate: true });
 </script>
 
 <template>
   <div class="app-shell">
-    <header class="topbar">
-      <RouterLink class="brand" to="/quality">石油工程术语质控</RouterLink>
-      <nav class="nav" aria-label="主导航">
-        <RouterLink v-for="page in pages" :key="page.name" :class="{ active: activeName === page.name }" :to="page.path">{{ page.label }}</RouterLink>
-      </nav>
-      <div class="stats" aria-label="数据统计"><span>术语 <b>{{ store.termCount }}</b> 条</span><i /><span>规则 <b>{{ store.ruleCount }}</b> 条</span></div>
-    </header>
+    <aside class="side-panel">
+      <RouterLink class="side-brand" to="/"><span class="brand-mark">⌁</span><span class="brand-copy"><strong>石油工程数据质控</strong><small>管理平台</small></span></RouterLink>
+      <nav class="side-nav" aria-label="主导航"><p>导航</p><RouterLink v-for="page in pages" :key="page.name" :class="{ active: activeName === page.name }" :to="page.path"><span class="nav-icon">{{ page.icon }}</span><span class="nav-label">{{ page.label }}</span></RouterLink></nav>
+      <div class="side-summary"><span><i class="status-dot" />系统服务正常</span><small>术语 {{ store.termCount }} 条 · 规则 {{ store.ruleCount }} 条</small></div>
+    </aside>
     <main class="workspace"><RouterView /></main>
   </div>
 </template>

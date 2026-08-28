@@ -1,21 +1,41 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { executableRuleCount, inspectText, markText, type IssueLevel, type QualityIssue } from "../services/qualityEngine";
 import "./QualityPage.css";
+import "./QualityImage.css";
+import "./QualityImagePreview.css";
 
 interface SpeechRecognitionEventLike extends Event { results:ArrayLike<{0:{transcript:string};isFinal:boolean}>; resultIndex:number; }
 interface SpeechRecognitionLike { lang:string; continuous:boolean; interimResults:boolean; start():void; stop():void; onresult:((event:SpeechRecognitionEventLike)=>void)|null; onerror:((event:{error:string})=>void)|null; onend:(()=>void)|null; }
 type SpeechRecognitionConstructor = new()=>SpeechRecognitionLike;
-interface QualityFile { id:string; kind:"file"|"text"; file:File; text:string; extractedText?:string; tableData?:string[][]; originalSize?:number; status:"waiting"|"parsing"|"ready"|"error"; saveStatus:"saving"|"saved"|"deleting"|"save-error"; savedPath?:string; savedFilename?:string; error?:string; deleteError?:string; }
+interface QualityFile { id:string; kind:"file"|"text"|"image"; file:File; text:string; extractedText?:string; tableData?:string[][]; originalSize?:number; status:"waiting"|"parsing"|"ready"|"error"; saveStatus:"saving"|"saved"|"deleting"|"save-error"; savedPath?:string; savedFilename?:string; error?:string; deleteError?:string; }
 const accepted=".xlsx,.xls,.csv,.tsv,.doc,.docx,.txt,.md,.json,.xml";
 const files=ref<QualityFile[]>([]);const stagedFiles=ref<File[]>([]);const textInput=ref("");const voiceStatus=ref("");const listening=ref(false);const uploading=ref(false);const activeId=ref("");const picker=ref<HTMLInputElement>();const dragging=ref(false);const selectedIssue=ref("");let recognition:SpeechRecognitionLike|undefined;
+const imagePicker=ref<HTMLInputElement>();const selectedImage=ref<File>();const imagePreview=ref("");const imageName=ref("");const imageSize=ref(0);const imageDragging=ref(false);const imageUploading=ref(false);
 const activeFile=computed(()=>files.value.find(x=>x.id===activeId.value));
 const issues=computed(()=>activeFile.value?.status==="ready"?inspectText(activeFile.value.text):[]);
 const segments=computed(()=>activeFile.value?markText(activeFile.value.text,issues.value):[]);
 const counts=computed(()=>({error:issues.value.filter(x=>x.level==="error").length,warning:issues.value.filter(x=>x.level==="warning").length,suggestion:issues.value.filter(x=>x.level==="suggestion").length}));
 const previewText=computed(()=>activeFile.value?.extractedText??activeFile.value?.text??"");
+const activeImageUrl=computed(()=>activeFile.value?.kind==="image"&&activeFile.value.savedFilename?`/api/quality/upload/${encodeURIComponent(activeFile.value.savedFilename)}`:"");
 const levelLabel:Record<IssueLevel,string>={error:"错误",warning:"警告",suggestion:"建议"};
 function formatFileSize(size:number){if(size<1024)return `${size} B`;if(size<1024*1024)return `${(size/1024).toFixed(1)} KB`;return `${(size/1024/1024).toFixed(1)} MB`;}
+function isImageName(name:string){return /\.(png|jpe?g|webp|gif|bmp|tiff?|svg)$/i.test(name);}
+function selectPreviewImage(file?:File){
+  if(!file)return;
+  if(!file.type.startsWith("image/")){window.alert("请选择 PNG、JPG、WEBP、BMP、TIFF 等图片文件。");return;}
+  if(imagePreview.value)URL.revokeObjectURL(imagePreview.value);
+  selectedImage.value=file;imagePreview.value=URL.createObjectURL(file);imageName.value=file.name;imageSize.value=file.size;
+  if(imagePicker.value)imagePicker.value.value="";
+}
+function onImageDrop(event:DragEvent){event.preventDefault();imageDragging.value=false;selectPreviewImage(event.dataTransfer?.files[0]);}
+function clearPreviewImage(){if(imagePreview.value)URL.revokeObjectURL(imagePreview.value);selectedImage.value=undefined;imagePreview.value="";imageName.value="";imageSize.value=0;}
+async function uploadPreviewImage(){
+  if(!selectedImage.value||imageUploading.value)return;imageUploading.value=true;
+  const file=selectedImage.value;const item:QualityFile={id:crypto.randomUUID(),kind:"image",file,text:"",originalSize:file.size,status:"waiting",saveStatus:"saving"};
+  files.value.unshift(item);activeId.value=item.id;await saveUploadedFile(item);imageUploading.value=false;
+  if(item.saveStatus==="saved")clearPreviewImage();
+}
 
 async function parseFile(file:File):Promise<string>{
   const extension=file.name.split(".").pop()?.toLowerCase();
@@ -36,7 +56,7 @@ async function restoreUploadedFiles(){
     const result=await response.json() as Array<{filename:string;path:string;size:number;modified_at:string;extracted_text:string|null;table_data:string[][]|null;parse_error:string|null}>|{detail?:string};
     if(!response.ok||!Array.isArray(result))throw new Error(!Array.isArray(result)?result.detail:`读取失败（${response.status}）`);
     const existing=new Set(files.value.filter(item=>item.savedFilename).map(item=>item.savedFilename));
-    const restored:QualityFile[]=result.filter(item=>!existing.has(item.filename)).map(item=>({id:crypto.randomUUID(),kind:"file",file:new File([],item.filename,{lastModified:new Date(item.modified_at).getTime()}),text:"",extractedText:item.extracted_text??undefined,tableData:item.table_data??undefined,originalSize:item.size,status:item.parse_error?"error":"waiting",saveStatus:"saved",savedPath:item.path,savedFilename:item.filename,error:item.parse_error??undefined}));
+    const restored:QualityFile[]=result.filter(item=>!existing.has(item.filename)).map(item=>({id:crypto.randomUUID(),kind:isImageName(item.filename)?"image":"file",file:new File([],item.filename,{lastModified:new Date(item.modified_at).getTime()}),text:"",extractedText:item.extracted_text??undefined,tableData:item.table_data??undefined,originalSize:item.size,status:item.parse_error?"error":"waiting",saveStatus:"saved",savedPath:item.path,savedFilename:item.filename,error:item.parse_error??undefined}));
     files.value.push(...restored);if(!activeId.value&&restored[0])activeId.value=restored[0].id;
   }catch(error){console.error("恢复uploads文件失败",error);}
 }
@@ -76,6 +96,7 @@ async function toggleVoiceInput(){
   try{recognition.start();listening.value=true;voiceStatus.value="正在聆听，识别文字会自动写入输入框…";}catch{voiceStatus.value="语音识别启动失败，请稍后重试。";}
 }
 async function validateFile(item:QualityFile){
+  if(item.kind==="image")return;
   if(item.saveStatus!=="saved"||item.status==="parsing")return;
   activeId.value=item.id;selectedIssue.value="";item.status="parsing";item.error=undefined;
   try{const extension=item.file.name.split(".").pop()?.toLowerCase();if(extension==="xlsx"&&!item.extractedText)throw new Error("Excel解析服务不可用，请确认后端已启动。");item.text=item.extractedText??await parseFile(item.file);item.status="ready";}
@@ -93,6 +114,7 @@ async function removeFile(item:QualityFile){
 }
 function selectIssue(issue:QualityIssue){selectedIssue.value=issue.id;document.querySelector(`[data-issue="${issue.id}"]`)?.scrollIntoView({behavior:"smooth",block:"center"});}
 onMounted(restoreUploadedFiles);
+onBeforeUnmount(clearPreviewImage);
 </script>
 
 <template>
@@ -105,11 +127,12 @@ onMounted(restoreUploadedFiles);
       <div v-if="stagedFiles.length" class="quality-staged">已选择 {{ stagedFiles.length }} 个文件：{{ stagedFiles.map(file=>file.name).join('、') }}</div>
       <button class="quality-upload-button" :disabled="!stagedFiles.length||uploading" @click="uploadFiles">{{ uploading?'上传中…':`上传${stagedFiles.length?`（${stagedFiles.length}）`:''}` }}</button>
       <div class="quality-text-entry"><div><strong>文本质控</strong><span>{{ textInput.length }}/5000</span></div><div class="quality-textarea-wrap"><textarea v-model="textInput" maxlength="5000" placeholder="在此输入、粘贴或语音录入需要质控的文字……" @keydown.ctrl.enter="addText"></textarea><button class="quality-microphone" :class="{listening}" :title="listening?'停止语音输入':'启动语音输入'" type="button" @click="toggleVoiceInput"><span>🎙</span></button></div><small v-if="voiceStatus" class="quality-voice-status" :class="{listening}">{{ voiceStatus }}</small><button class="quality-add-text" :disabled="!textInput.trim()" @click="addText">加入待校验</button></div>
+      <section class="quality-image-entry"><div class="quality-image-heading"><div><strong>图像识别</strong><small>识别功能待接入</small></div><button v-if="imagePreview" type="button" title="移除当前图片" @click="clearPreviewImage">×</button></div><div v-if="imagePreview" class="quality-image-preview"><img :src="imagePreview" :alt="imageName"/><div><strong>{{ imageName }}</strong><span>{{ formatFileSize(imageSize) }}</span></div></div><div v-else class="quality-image-drop" :class="{dragging:imageDragging}" @dragenter.prevent="imageDragging=true" @dragleave.prevent="imageDragging=false" @dragover.prevent @drop="onImageDrop" @click="imagePicker?.click()"><span>▧</span><strong>选择或拖拽图片</strong><small>PNG、JPG、WEBP、BMP、TIFF</small></div><input ref="imagePicker" type="file" accept="image/*,.tif,.tiff" @change="event=>selectPreviewImage((event.target as HTMLInputElement).files?.[0])"/><button class="quality-image-upload" :disabled="!selectedImage||imageUploading" @click="uploadPreviewImage">{{imageUploading?'上传中…':'上传并加入待校验'}}</button><p>图片将保存到 uploads 并显示在列表和右侧预览中，内容识别功能稍后接入。</p></section>
       <div class="quality-files-heading"><strong>待校验内容</strong><span>{{ files.length }}</span></div>
       <div v-if="!files.length" class="quality-files-empty">尚未上传文件或添加文本</div>
       <div class="quality-files">
         <div v-for="item in files" :key="item.id" class="quality-file-row" :class="{active:activeId===item.id}" @click="activeId=item.id">
-          <span class="quality-file-icon">{{ item.kind==='text'?'文本':item.file.name.split('.').pop()?.toUpperCase() }}</span><span class="quality-file-info"><strong>{{ item.file.name }}</strong><small>{{ item.deleteError??`${item.status==='parsing'?'校验中…':item.status==='error'?'校验失败':item.status==='ready'?'校验完成':'待校验'} · ${item.kind==='text'?'文本输入':item.saveStatus==='saved'?'已保存':item.saveStatus==='deleting'?'删除中…':item.saveStatus==='save-error'?'保存失败':'保存中…'}` }}</small></span><button class="quality-check" :disabled="item.saveStatus!=='saved'||item.status==='parsing'" @click.stop="validateFile(item)">{{ item.status==='ready'?'重新校验':'校验' }}</button><button class="quality-remove" :title="item.kind==='text'?'删除文本':'同时从后台删除'" :disabled="item.saveStatus==='saving'||item.saveStatus==='deleting'" @click.stop="removeFile(item)">×</button>
+          <span class="quality-file-icon">{{ item.kind==='text'?'文本':item.kind==='image'?'图片':item.file.name.split('.').pop()?.toUpperCase() }}</span><span class="quality-file-info"><strong>{{ item.file.name }}</strong><small>{{ item.deleteError??`${item.kind==='image'?'待识别':item.status==='parsing'?'校验中…':item.status==='error'?'校验失败':item.status==='ready'?'校验完成':'待校验'} · ${item.kind==='text'?'文本输入':item.saveStatus==='saved'?'已保存':item.saveStatus==='deleting'?'删除中…':item.saveStatus==='save-error'?'保存失败':'保存中…'}` }}</small></span><button class="quality-check" :disabled="item.kind==='image'||item.saveStatus!=='saved'||item.status==='parsing'" @click.stop="validateFile(item)">{{item.kind==='image'?'待识别':item.status==='ready'?'重新校验':'校验'}}</button><button class="quality-remove" :title="item.kind==='text'?'删除文本':'同时从后台删除'" :disabled="item.saveStatus==='saving'||item.saveStatus==='deleting'" @click.stop="removeFile(item)">×</button>
         </div>
       </div>
     </aside>
@@ -119,7 +142,7 @@ onMounted(restoreUploadedFiles);
         <div class="quality-toolbar"><div><h2>{{ activeFile.file.name }}</h2><span>{{ activeFile.status==='ready'?`校验完成 · 已执行 ${executableRuleCount} 条确定性规则`:activeFile.status==='parsing'?`正在执行 ${executableRuleCount} 条确定性规则…`:activeFile.status==='waiting'?`内容已加入 · 当前可执行 ${executableRuleCount} 条规则`:activeFile.error }}</span></div><div class="quality-stats"><b class="error">{{ counts.error }}<small>错误</small></b><b class="warning">{{ counts.warning }}<small>警告</small></b><b class="suggestion">{{ counts.suggestion }}<small>建议</small></b></div></div>
         <div v-if="activeFile.status==='error'" class="parse-error">{{ activeFile.error }}</div>
         <div v-else-if="activeFile.status==='parsing'" class="quality-loading">正在解析并执行质控规则…</div>
-        <section v-else-if="activeFile.status==='waiting'" class="quality-preview" :class="{tabular:activeFile.tableData?.length}"><div class="quality-preview-header"><div><strong>文件内容预览</strong><span>预览仅用于查看，点击左侧“校验”后才执行质控规则</span></div><div class="quality-preview-meta"><span>{{ activeFile.kind==='text'?'文本输入':activeFile.file.name.split('.').pop()?.toUpperCase()||'文件' }}</span><span>{{ formatFileSize(activeFile.originalSize??activeFile.file.size) }}</span></div></div><div v-if="activeFile.tableData?.length" class="quality-table-preview"><table><thead><tr><th v-for="(cell,column) in activeFile.tableData[0]" :key="column">{{ cell||`第${column+1}列` }}</th></tr></thead><tbody><tr v-for="(row,rowIndex) in activeFile.tableData.slice(1)" :key="rowIndex"><td v-for="(_,column) in activeFile.tableData[0]" :key="column">{{ row[column]??'' }}</td></tr></tbody></table></div><div v-else-if="previewText" class="quality-document-stage"><article class="quality-document-preview">{{ previewText }}</article></div><div v-else class="quality-preview-empty"><b>暂无可显示的文本预览</b><span>该文件可能为空，或属于当前版本暂不支持解析的旧版 DOC/XLS 格式。</span><span>可以点击左侧“校验”查看具体提示。</span></div></section>
+        <section v-else-if="activeFile.status==='waiting'" class="quality-preview" :class="{tabular:activeFile.tableData?.length,image:activeFile.kind==='image'}"><div class="quality-preview-header"><div><strong>{{activeFile.kind==='image'?'图像内容预览':'文件内容预览'}}</strong><span>{{activeFile.kind==='image'?'当前仅支持图片预览，内容识别功能待接入':'预览仅用于查看，点击左侧“校验”后才执行质控规则'}}</span></div><div class="quality-preview-meta"><span>{{ activeFile.kind==='text'?'文本输入':activeFile.file.name.split('.').pop()?.toUpperCase()||'文件' }}</span><span>{{ formatFileSize(activeFile.originalSize??activeFile.file.size) }}</span></div></div><div v-if="activeFile.kind==='image'" class="quality-full-image"><img :src="activeImageUrl" :alt="activeFile.file.name"/></div><div v-else-if="activeFile.tableData?.length" class="quality-table-preview"><table><thead><tr><th v-for="(cell,column) in activeFile.tableData[0]" :key="column">{{ cell||`第${column+1}列` }}</th></tr></thead><tbody><tr v-for="(row,rowIndex) in activeFile.tableData.slice(1)" :key="rowIndex"><td v-for="(_,column) in activeFile.tableData[0]" :key="column">{{ row[column]??'' }}</td></tr></tbody></table></div><div v-else-if="previewText" class="quality-document-stage"><article class="quality-document-preview">{{ previewText }}</article></div><div v-else class="quality-preview-empty"><b>暂无可显示的文本预览</b><span>该文件可能为空，或属于当前版本暂不支持解析的旧版 DOC/XLS 格式。</span><span>可以点击左侧“校验”查看具体提示。</span></div></section>
         <div v-else class="quality-result">
           <section class="annotated-panel"><div class="panel-header"><strong>数据标注结果</strong><div class="legend small"><span class="legend-error">错误</span><span class="legend-warning">警告</span><span class="legend-suggestion">建议</span></div></div><div class="annotated-content"><template v-for="(segment,index) in segments" :key="index"><mark v-if="segment.level" :class="segment.level" :data-issue="segment.issueId" :title="levelLabel[segment.level]" @click="selectedIssue=segment.issueId!">{{ segment.text }}</mark><span v-else>{{ segment.text }}</span></template></div></section>
           <aside class="issue-panel"><div class="panel-header"><strong>发现的问题</strong><span>{{ issues.length }} 项</span></div><div v-if="!issues.length" class="no-issues">✓<strong>未发现典型问题</strong><span>当前内容已通过已启用规则检查</span></div><button v-for="issue in issues" v-else :key="issue.id" class="issue-card" :class="[issue.level,{active:selectedIssue===issue.id}]" @click="selectIssue(issue)"><span class="issue-level">{{ levelLabel[issue.level] }}</span><div><strong>{{ issue.title }} · {{ issue.ruleId }}</strong><p>{{ issue.message }}</p><small>{{ issue.suggestion }}</small></div></button></aside>
