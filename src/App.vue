@@ -2,6 +2,7 @@
 import { computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { pages } from "./router";
+import "./return-home.css";
 import { useDataStore } from "./stores/data";
 
 const route = useRoute();

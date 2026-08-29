@@ -120,7 +120,7 @@ onBeforeUnmount(clearPreviewImage);
 <template>
   <section class="quality-page">
     <aside class="quality-left">
-      <div class="quality-title"><h1>数据质控</h1><p>上传实验或工程数据进行校验</p></div>
+      <div class="quality-title"><div><h1>数据质控</h1><p>上传实验或工程数据进行校验</p></div><RouterLink class="home-return" to="/">← 返回首页</RouterLink></div>
       <div class="quality-upload" :class="{dragging}" @dragenter="dragging=true" @dragleave="dragging=false" @dragover.prevent @drop="onDrop" @click="picker?.click()">
         <div>＋</div><strong>选择或拖拽文件</strong><span>Excel、CSV、Word、TXT、JSON、XML</span><input ref="picker" type="file" multiple :accept="accepted" @change="event=>stageFiles((event.target as HTMLInputElement).files!)"/>
       </div>

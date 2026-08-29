@@ -28,7 +28,7 @@ function toggleCurrentResults(){const currentIds=results.value.map(item=>item.id
 
 <template>
   <section class="data-page">
-    <div class="data-heading"><div><h1>术语库</h1><p>石油工程规范术语、英文名称、缩写、定义和标准来源。</p></div><div class="term-count-summary"><div class="result-count">共 <b>{{ results.length }}</b> 条术语</div><div class="term-review-counts"><span class="approved"><i></i>审核通过 <b>{{ reviewCounts.approved }}</b></span><span class="rejected"><i></i>驳回 <b>{{ reviewCounts.rejected }}</b></span><span class="pending"><i></i>待审核 <b>{{ reviewCounts.pending }}</b></span></div></div></div>
+    <div class="data-heading"><div><h1>术语库</h1><p>石油工程规范术语、英文名称、缩写、定义和标准来源。</p></div><div class="heading-actions"><div class="term-count-summary"><div class="result-count">共 <b>{{ results.length }}</b> 条术语</div><div class="term-review-counts"><span class="approved"><i></i>审核通过 <b>{{ reviewCounts.approved }}</b></span><span class="rejected"><i></i>驳回 <b>{{ reviewCounts.rejected }}</b></span><span class="pending"><i></i>待审核 <b>{{ reviewCounts.pending }}</b></span></div></div><RouterLink class="home-return" to="/">← 返回首页</RouterLink></div></div>
     <div class="filter-bar">
       <div class="search-box"><span>⌕</span><input v-model="query" placeholder="模糊查询中文、英文、缩写、定义、别名或来源"/><button v-if="query" @click="query=''">×</button></div>
       <select v-model="domain"><option v-for="item in domains" :key="item">{{ item }}</option></select>

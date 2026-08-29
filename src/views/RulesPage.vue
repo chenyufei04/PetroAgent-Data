@@ -18,7 +18,7 @@ const results=computed(()=>{const keyword=query.value.trim().toLocaleLowerCase()
 
 <template>
   <section class="data-page rules-page">
-    <div class="data-heading"><div><h1>规则库</h1><p>石油工程术语、单位、数据范围与业务逻辑质控规则。</p></div><div class="result-count">共 <b>{{ results.length }}</b> 条规则</div></div>
+    <div class="data-heading"><div><h1>规则库</h1><p>石油工程术语、单位、数据范围与业务逻辑质控规则。</p></div><div class="heading-actions"><div class="result-count">共 <b>{{ results.length }}</b> 条规则</div><RouterLink class="home-return" to="/">← 返回首页</RouterLink></div></div>
     <div class="rule-notice"><strong>初级版本</strong><span>规则库共 {{ ruleRecords.length }} 条，其中 {{ implementedCount }} 条已接入质控引擎；配置模板和待开发规则目前不会参与校验。</span></div>
     <div class="filter-bar">
       <div class="search-box"><span>⌕</span><input v-model="query" placeholder="模糊查询规则名称、条件、提示、依据或适用范围"/><button v-if="query" @click="query=''">×</button></div>

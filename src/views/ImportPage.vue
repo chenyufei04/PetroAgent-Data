@@ -66,7 +66,7 @@ function clearCompleted(){current.value.files.value=current.value.files.value.fi
 
 <template>
   <section class="import-page">
-    <div class="page-heading"><div><h1>数据导入</h1><p>术语与规则使用独立队列和本地目录，避免数据混存。</p></div></div>
+    <div class="page-heading"><div><h1>数据导入</h1><p>术语与规则使用独立队列和本地目录，避免数据混存。</p></div><RouterLink class="home-return" to="/">← 返回首页</RouterLink></div>
     <div class="import-tabs" role="tablist">
       <button v-for="kind in (['terms','rules'] as ImportKind[])" :key="kind" :class="{active:activeKind===kind}" role="tab" @click="switchKind(kind)">
         <span>{{ workspaces[kind].label }}</span><b>{{ workspaces[kind].files.value.length }}</b>

@@ -12,7 +12,7 @@ const count=(type:BaseRecord["type"])=>baseRecords.filter(x=>x.type===type).leng
 
 <template>
   <section class="data-page">
-    <div class="data-heading"><div><h1>基础数据</h1><p>维护术语质控使用的专业分类、计量单位、缩写和权威来源。</p></div><div class="result-count">当前 <b>{{ results.length }}</b> 条</div></div>
+    <div class="data-heading"><div><h1>基础数据</h1><p>维护术语质控使用的专业分类、计量单位、缩写和权威来源。</p></div><div class="heading-actions"><div class="result-count">当前 <b>{{ results.length }}</b> 条</div><RouterLink class="home-return" to="/">← 返回首页</RouterLink></div></div>
     <div class="base-layout">
       <aside class="base-menu"><button v-for="type in types" :key="type" :class="{active:activeType===type}" @click="activeType=type"><span>{{ type }}</span><b>{{ count(type) }}</b></button></aside>
       <div class="base-content">

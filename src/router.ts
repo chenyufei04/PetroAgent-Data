@@ -6,6 +6,7 @@ import TermsPage from "./views/TermsPage.vue";
 import BaseDataPage from "./views/BaseDataPage.vue";
 import RulesPage from "./views/RulesPage.vue";
 import QualityPage from "./views/QualityPage.vue";
+import CheckPage from "./views/CheckPage.vue";
 
 export const pages = [
   { path: "/", name: "home", label: "首页", icon: "⌂" },
@@ -23,7 +24,7 @@ export default createRouter({
     ...pages.map(page => ({
       path: page.path,
       name: page.name,
-      component: page.name === "home" ? HomePage : page.name === "import" ? ImportPage : page.name === "terms" ? TermsPage : page.name === "base" ? BaseDataPage : page.name === "rules" ? RulesPage : page.name === "quality" ? QualityPage : BlankPage,
+      component: page.name === "home" ? HomePage : page.name === "import" ? ImportPage : page.name === "terms" ? TermsPage : page.name === "base" ? BaseDataPage : page.name === "rules" ? RulesPage : page.name === "quality" ? QualityPage : page.name === "check" ? CheckPage : BlankPage,
       meta: { label: page.label },
     })),
   ],
