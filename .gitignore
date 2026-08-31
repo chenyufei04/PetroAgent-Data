@@ -32,6 +32,8 @@ uploads/*
 
 # Logs and temporary files
 *.log
+logs/*
+!logs/model_runs.log
 *.tmp
 *.temp
 *.swp
@@ -51,3 +53,19 @@ uploads/*
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Model artifacts and intermediate datasets (keep directory structure only)
+model-artifacts/*
+!model-artifacts/.gitkeep
+!model-artifacts/models/
+!model-artifacts/models/.gitkeep
+model-artifacts/models/*
+!model-artifacts/models/.gitkeep
+!model-artifacts/reports/
+!model-artifacts/reports/.gitkeep
+model-artifacts/reports/*
+!model-artifacts/reports/.gitkeep
+!model-artifacts/intermediate/
+!model-artifacts/intermediate/.gitkeep
+model-artifacts/intermediate/*
+!model-artifacts/intermediate/.gitkeep
