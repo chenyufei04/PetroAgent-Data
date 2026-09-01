@@ -1,0 +1,18 @@
+# Copy to database.toml for local use. database.toml is ignored by Git.
+[database]
+driver = "postgresql"
+host = "$PETRO_DB_HOST"
+port = 5432
+name = "$PETRO_DB_NAME"
+user = "$PETRO_DB_USER"
+password = "$PETRO_DB_PASSWORD"
+pool_size = 5
+max_overflow = 10
+connect_timeout_seconds = 10
+echo_sql = false
+[security]
+ssl_mode = "prefer"
+secret_source = "environment"
+[metadata]
+schema = "petro_quality"
+timezone = "Asia/Shanghai"

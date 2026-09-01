@@ -16,6 +16,8 @@ from openpyxl import load_workbook
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 UPLOAD_DIR = PROJECT_ROOT / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+PREPROCESSING_UPLOAD_DIR = PROJECT_ROOT / "preprocessing-uploads"
+PREPROCESSING_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 MAX_FILE_SIZE = 100 * 1024 * 1024
 MAX_PREVIEW_ROWS = 500
 
@@ -42,6 +44,13 @@ def available_path(filename: str) -> Path:
     stem, suffix = target.stem, target.suffix
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
     return UPLOAD_DIR / f"{stem}-{stamp}{suffix}"
+
+def available_path_in(directory: Path, filename: str) -> Path:
+    target = directory / filename
+    if not target.exists():
+        return target
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+    return directory / f"{target.stem}-{stamp}{target.suffix}"
 
 
 def extract_excel_text(path: Path) -> str | None:
@@ -182,4 +191,28 @@ def delete_quality_file(filename: str) -> dict[str, str]:
         target.unlink()
     except OSError as exc:
         raise HTTPException(status_code=500, detail=f"删除文件失败：{exc}") from exc
+    return {"status": "deleted", "filename": safe_name}
+
+@app.get("/api/preprocessing/uploads")
+def list_preprocessing_files() -> list[dict[str, object]]:
+    return [{"filename": p.name, "size": p.stat().st_size, "modified_at": datetime.fromtimestamp(p.stat().st_mtime).isoformat()} for p in sorted(PREPROCESSING_UPLOAD_DIR.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True) if p.is_file() and not p.name.startswith(".")]
+
+@app.post("/api/preprocessing/upload")
+async def save_preprocessing_file(file: UploadFile = File(...)) -> dict[str, object]:
+    content = await file.read(MAX_FILE_SIZE + 1)
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="文件不能超过100 MB")
+    target = available_path_in(PREPROCESSING_UPLOAD_DIR, safe_filename(file.filename))
+    target.write_bytes(content)
+    return {"filename": target.name, "path": str(target), "size": len(content), "status": "waiting"}
+
+@app.delete("/api/preprocessing/upload/{filename}")
+def delete_preprocessing_file(filename: str) -> dict[str, str]:
+    safe_name = safe_filename(filename)
+    if safe_name != filename:
+        raise HTTPException(status_code=400, detail="文件名不合法")
+    target = PREPROCESSING_UPLOAD_DIR / safe_name
+    if not target.is_file():
+        raise HTTPException(status_code=404, detail="文件不存在")
+    target.unlink()
     return {"status": "deleted", "filename": safe_name}

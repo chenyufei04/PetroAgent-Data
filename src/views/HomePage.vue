@@ -20,6 +20,7 @@ const modules=[
 {path:"/terms",eyebrow:"TERMINOLOGY",title:"术语库",description:"浏览石油工程标准术语、英文名称、缩写、定义及审核状态。",tone:"green",icon:"T",action:"查看术语"},
 {path:"/base",eyebrow:"BASE DATA",title:"基础数据",description:"管理专业分类、计量单位、常用缩写和公开数据来源。",tone:"orange",icon:"D",action:"查看数据"},
 {path:"/import",eyebrow:"DATA IMPORT",title:"数据导入",description:"分别导入和保存术语与规则文件，扩充本地知识数据。",tone:"cyan",icon:"↑",action:"导入数据"},
+{path:"/preprocessing",eyebrow:"DATA PREPROCESSING",title:"数据预处理",description:"上传工程数据，为缺失、失真、陈旧和格式问题处理预留算法工作台。",tone:"blue",icon:"⚙",action:"进入预处理"},
 {path:"/check",eyebrow:"RULE INSPECTION",title:"规则自检",description:"检查规则执行状态，为后续冲突检测和回归验证预留统一入口。",tone:"slate",icon:"◎",action:"进入自检"}];
 </script>
 <template><section class="home-page"><div class="home-dashboard">

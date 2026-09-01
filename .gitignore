@@ -29,6 +29,9 @@ htmlcov/
 # Uploaded user files (keep the directory)
 uploads/*
 !uploads/.gitkeep
+preprocessing-uploads/*
+!preprocessing-uploads/.gitkeep
+backend/config/database.toml
 
 # Logs and temporary files
 *.log
